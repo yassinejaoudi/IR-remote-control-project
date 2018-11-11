@@ -3,6 +3,7 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.numeric_std.all;
+--use IEEE.std_logic_unsigned.all;
 
 entity RC_receiver is
 generic (
@@ -60,22 +61,23 @@ signal posedge : std_logic;
 -- shift register which holds the transmitted bits
 signal shift_reg :std_logic_vector (max_bits-1 downto 0) := ( others => '0');
 -- state machine signals
-type state_type is (init, read_LC_on, check_LC_on_count, read_LC_off, check_LC_off_count, read_data, check_data);
+type state_type is (init_state, read_LC_on, check_LC_on_count, read_LC_off, check_LC_off_count, read_data, check_data);
 signal state, nxt_state :state_type;
 begin
-	--State Machine Processes
-	state_proc: process(clk)
-	begin 
-		if(rising_edge(clk)) then	
-			if(reset = '0') then
-				state <= init_state;
-			else
-				state <= nxt_state;
-			end if;
-		end if;
-	end process state_proc;
+	-- --State Machine Processes
+	-- state_proc: process(clk)
+	-- begin 
+		-- if(rising_edge(clk)) then	
+			-- if(reset = '0') then
+				-- state <= init_state;
+			-- else
+				-- state <= nxt_state;
+			-- end if;
+		-- end if;
+	-- end process state_proc;
 	
-	nxt_sate_proc: process(state, read_LC_on ,checking_data)
+	-- TODO: Correct the sensitivity list
+	nxt_sate_proc: process(state)
 	begin	
 		-- TODO: Check if we need any control sig and if Yes, implement it below
 		nxt_state <= state;
@@ -83,14 +85,56 @@ begin
 		case state is
 			-- Initialization state
 			when init_state =>
-				if read_LC_on = '1' then
-					nxt_sate <= 
+				if posedge = '1' then
+					nxt_state <= read_LC_on;
+				else 
+					nxt_state <= init_state;
+				end if;
+			when read_LC_on =>
+				if data = '0' then
+					nxt_state <= check_LC_on_count;
+				else 
+					nxt_state <= read_LC_on;
+				end if;
+			when  check_LC_on_count =>
+				-- TODO: Check if the if statement condition is correct
+				if (LC_on_counter>='0' & LC_on_counter<= LC_on_max+trans_max )then 
+					nxt_state <= read_LC_off;
+				else 
+					nxt_state <= init_state;
+				end if;
+			when read_LC_off =>
+				if posedge = '1' then
+					nxt_state <= check_LC_off_count;
+				else 
+					nxt_state <= read_LC_off;
+			when check_LC_off_count =>
+				-- TODO: Check if the if statement condition is correct
+				if LC_off_counter = '1' then
+					nxt_sate <= read_data;
+				else 
+					nxt_sate <= init_state;
+			when read_data =>
+				if posedge = '1' then
+					nxt_sate <= check_data;
+				else 
+					nxt_sate <= read_data;
+			when check_data =>
+				if data_counter /= 31 then
+					nxt_state <= read_data;
+				else 
+					nxt_state <= init_state;
+			-- TODO: Implement state machine for LED Illumination
+		end case;
+	end process nxt_sate_proc;
 		
 -- 7 segment display circuitry
-componet hex_to_7_seg is
+component hex_to_7_seg is
 	port (seven_seg :out std_logic_vector (6 downto 0);
 		hex : in std_logic_vector (3 downto 0));
 end component;
+
+end behavior;
 
 
 
