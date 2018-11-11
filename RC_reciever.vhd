@@ -30,6 +30,12 @@ port(
 end RC_receiver;
 
 architecture behavior of RC_receiver is
+
+-- 7 segment display circuitry
+component hex_to_7_seg is
+	port (seven_seg :out std_logic_vector (6 downto 0);
+		hex : in std_logic_vector (3 downto 0));
+end component;
 ------------------------------------------------------------------------------------------
 -- leader code off duration
 -- lengths of symbols '1' and '0'
@@ -108,32 +114,29 @@ begin
 					nxt_state <= check_LC_off_count;
 				else 
 					nxt_state <= read_LC_off;
+				end if;
 			when check_LC_off_count =>
 				-- TODO: Check if the if statement condition is correct
 				if LC_off_counter = '1' then
 					nxt_sate <= read_data;
 				else 
 					nxt_sate <= init_state;
+				end if;
 			when read_data =>
 				if posedge = '1' then
 					nxt_sate <= check_data;
 				else 
 					nxt_sate <= read_data;
+				end if;
 			when check_data =>
 				if data_counter /= 31 then
 					nxt_state <= read_data;
 				else 
 					nxt_state <= init_state;
+				end if;
 			-- TODO: Implement state machine for LED Illumination
 		end case;
 	end process nxt_sate_proc;
-		
--- 7 segment display circuitry
-component hex_to_7_seg is
-	port (seven_seg :out std_logic_vector (6 downto 0);
-		hex : in std_logic_vector (3 downto 0));
-end component;
-
 end behavior;
 
 
