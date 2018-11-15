@@ -7,9 +7,7 @@ use IEEE.std_logic_unsigned.all;
  entity RC_receiver is
 generic (
 	-- number of clks for the leader code-on signal (assumine 50MHZ clk)
-	LC_on_max : integer := 450000;
-	-- Counter
-	cnt: integer := 49779500
+	LC_on_max : integer := 450000
 	);
 port(
 	-- Outputs to the 8 7-segment displays, the remote control
@@ -64,8 +62,8 @@ signal data : std_logic;
 signal data_lead, data_follow : std_logic;
 signal posedge : std_logic:='0';
 -- Counter 1 and counter2 signals
-signal counter_one: integer range 0 to cnt;
-signal counter_two: integer range 0 to cnt-9000;
+signal counter_one: std_logic_vector(21 downto 0):= "0001101011101010101000"; -- PReloaded with 441,000
+signal counter_two: std_logic_vector(21 downto 0):= "0010010100010101010111"; --Prealoaded with 607,575
 signal pulse_counter_clear: std_logic:= '0';
 signal LC_counter_clear: std_logic :='0';
 -- shift register which holds the transmitted bits
@@ -89,10 +87,12 @@ begin
 	Pulse_counter: process(clk)
 	begin
 		if rising_edge(clk) then
-			if pulse_counter_clear = '1' then
-				counter_one <= 0;
-			else 
-				counter_one <= counter_one + 1;
+			if(data_in = '1') then
+				if pulse_counter_clear = '1' then
+					counter_one <= "0001101011101010101000";
+				else 
+					counter_one <= counter_one + "0000000000000000000001";
+				end if;
 			end if;
 		end if;
 	end process;
@@ -102,10 +102,12 @@ begin
 	LC_counter: process(clk)
 	begin
 		if rising_edge(clk) then
-			if LC_counter_clear = '1' then
-				counter_two <= 0;
-			else
-				counter_two <= counter_two + 1;
+			if(data_in = '1') then
+				if LC_counter_clear = '1' then
+					counter_two <= "0010010100010101010111";
+				else
+					counter_two <= counter_two + "0000000000000000000001";
+				end if;
 			end if;
 		end if;
 	end process;
@@ -159,7 +161,7 @@ begin
 				end if;
 			when  check_LC_on_count =>
 				-- TODO: Check if the if statement condition is correct
-				if (LC_on_counter>=1 and LC_on_counter<= 0)then 
+				if (counter_one(21) <= '1')then 
 					nxt_state <= read_LC_off;
 				else 
 					nxt_state <= init_state;
@@ -172,7 +174,7 @@ begin
 				end if;
 			when check_LC_off_count =>
 				-- TODO: Check if the if statement condition is correct
-				if LC_off_counter = 1 then
+				if (counter_two(21) <= '1') then
 					nxt_state <= read_data;
 				else 
 					nxt_state <= init_state;
