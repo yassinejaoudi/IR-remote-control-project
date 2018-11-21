@@ -1,0 +1,7 @@
+*.vhd.bak
+RC_1st_version.vhd
+work
+*.wlf
+wlft*
+tcl_stacktrace.txt
+*.csv
