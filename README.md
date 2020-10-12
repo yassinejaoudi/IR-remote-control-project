@@ -20,4 +20,4 @@
 * Teamwork and Time management
 
 ## Hardware Design Formal Report:
-The [report](IR-remote-control-project/Final Project Report.pdf) file have a thorough of the design process, all the debugged faced issues, and the results.
+The [report](IR-remote-control-project/Final%20Project%20Report.pdf) file have a thorough of the design process, all the debugged faced issues, and the results.
