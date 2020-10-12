@@ -28,7 +28,7 @@ port (
 			
 	clk							: in std_logic;
 	data_in						: in std_logic;
-	reset						: in std_logic := '0');
+	reset						: in std_logic);
 end component;
 
 constant LC_on_max 				: integer := 50;
